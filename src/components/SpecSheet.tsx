@@ -1,4 +1,5 @@
 import type { SelectorResult, SelectorInput } from '../engine/types';
+import { parseDisplayName } from '../engine/displayName';
 
 interface Props {
   result: SelectorResult;
@@ -52,7 +53,19 @@ export default function SpecSheet({ result, input }: Props) {
     <div className="text-ink">
       <div className="mb-5 border-b border-sand pb-4">
         <h2 className="font-heading text-xl font-semibold text-ink">{result.title}</h2>
-        <p className="font-heading text-lg font-medium text-accent-dark mt-0.5">{result.fullName}</p>
+        <div className="mt-0.5 flex flex-wrap items-center gap-2">
+          <p className="font-heading text-lg font-medium text-accent-dark">
+            {parseDisplayName(result.fullName).clean}
+          </p>
+          {parseDisplayName(result.fullName).status && (
+            <span
+              title={parseDisplayName(result.fullName).status!}
+              className="rounded-md bg-stone/20 px-2 py-0.5 text-xs font-heading text-ink/60"
+            >
+              {parseDisplayName(result.fullName).status}
+            </span>
+          )}
+        </div>
         <p className="text-xs text-stone mt-1">Модель: {result.modelName} · типоразмер №{s.size_no}</p>
 
         {result.stock && (

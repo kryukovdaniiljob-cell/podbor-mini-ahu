@@ -1,4 +1,5 @@
 import type { SelectorResult, SelectorInput } from '../engine/types';
+import { parseDisplayName } from '../engine/displayName';
 import AeroChart from './AeroChart';
 import SpecSheet from './SpecSheet';
 
@@ -84,7 +85,7 @@ function CompareCard({
       <p className="font-heading text-xs font-semibold uppercase tracking-wide text-accent-dark mb-1">
         {title}
       </p>
-      <p className="font-heading font-medium text-ink">{result.fullName}</p>
+      <p className="font-heading font-medium text-ink">{parseDisplayName(result.fullName).clean}</p>
       <p className="text-xs text-stone mb-2">{result.modelName}</p>
       <dl className="space-y-0.5 text-sm">
         <Line label="Расход" value={`${result.actual_flow.toFixed(0)} м³/ч`} />

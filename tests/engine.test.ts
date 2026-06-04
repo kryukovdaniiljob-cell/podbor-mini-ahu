@@ -164,6 +164,27 @@ describe('Подбор аналога', () => {
   });
 });
 
+describe('Очистка служебных пометок в названии', () => {
+  it('убирает НЕДОСТУПНА и возвращает статус', async () => {
+    const { parseDisplayName } = await import('../src/engine/displayName');
+    const r = parseDisplayName('ECO_A 200/1-3,0/1 НЕДОСТУПНА');
+    expect(r.clean).toBe('ECO_A 200/1-3,0/1');
+    expect(r.status).toMatch(/Архив/);
+  });
+  it('убирает НЕАКТУАЛЬНО', async () => {
+    const { parseDisplayName } = await import('../src/engine/displayName');
+    const r = parseDisplayName('Unimax P 2000 SW НЕАКТУАЛЬНО');
+    expect(r.clean).toBe('Unimax P 2000 SW');
+    expect(r.status).toMatch(/производства/);
+  });
+  it('обычное имя не меняется', async () => {
+    const { parseDisplayName } = await import('../src/engine/displayName');
+    const r = parseDisplayName('Unimax P 1500 CE');
+    expect(r.clean).toBe('Unimax P 1500 CE');
+    expect(r.status).toBeNull();
+  });
+});
+
 describe('§6.0 психрометрия', () => {
   it('Psat монотонно растёт', () => {
     expect(satPressure(0, db.air_properties)).toBeGreaterThan(0);
