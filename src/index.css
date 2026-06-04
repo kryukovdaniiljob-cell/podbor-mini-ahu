@@ -4,17 +4,18 @@
 
 html, body, #root { height: 100%; }
 body {
-  font-family: 'Lora', Georgia, serif;
-  background: #faf9f5;
-  color: #141413;
+  font-family: 'Inter', system-ui, Arial, sans-serif;
+  background: #f4f6f9;
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Poppins', Arial, sans-serif;
+  font-family: 'Inter', system-ui, Arial, sans-serif;
 }
 
-/* Заголовки секций и подписи — гротеск Poppins для контраста с текстом */
-.font-heading { font-family: 'Poppins', Arial, sans-serif; }
+.font-heading { font-family: 'Inter', system-ui, Arial, sans-serif; }
+.font-wordmark { font-family: 'Oswald', 'Arial Narrow', sans-serif; }
 
 @media print {
   .no-print { display: none !important; }

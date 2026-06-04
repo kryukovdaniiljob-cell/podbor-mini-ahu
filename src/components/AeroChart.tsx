@@ -25,47 +25,47 @@ export default function AeroChart({ result, input }: Props) {
     <div>
       <ResponsiveContainer width="100%" height={420}>
         <ComposedChart data={data} margin={{ top: 16, right: 24, bottom: 30, left: 16 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#e8e6dc" />
+          <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
           <XAxis
             dataKey="Q" type="number" domain={[0, Math.round(xMax)]}
-            label={{ value: 'Расход, м³/ч', position: 'insideBottom', offset: -12, fill: '#141413' }}
-            tick={{ fontSize: 11, fill: '#141413' }} stroke="#b0aea5"
+            label={{ value: 'Расход, м³/ч', position: 'insideBottom', offset: -12, fill: '#0f172a' }}
+            tick={{ fontSize: 11, fill: '#0f172a' }} stroke="#94a3b8"
           />
           <YAxis
-            label={{ value: 'Напор, Па', angle: -90, position: 'insideLeft', fill: '#141413' }}
-            tick={{ fontSize: 11, fill: '#141413' }} stroke="#b0aea5"
+            label={{ value: 'Напор, Па', angle: -90, position: 'insideLeft', fill: '#0f172a' }}
+            tick={{ fontSize: 11, fill: '#0f172a' }} stroke="#94a3b8"
           />
           <Tooltip
             formatter={(val: number, name: string) => [`${val} Па`, name]}
             labelFormatter={(l) => `Расход: ${l} м³/ч`}
-            contentStyle={{ borderRadius: 12, border: '1px solid #e8e6dc', fontFamily: 'Lora, Georgia, serif' }}
+            contentStyle={{ borderRadius: 8, border: '1px solid #e2e8f0', fontFamily: 'Inter, system-ui, sans-serif' }}
           />
-          <Legend verticalAlign="top" height={28} wrapperStyle={{ fontFamily: 'Poppins, Arial, sans-serif', fontSize: 12 }} />
+          <Legend verticalAlign="top" height={28} wrapperStyle={{ fontFamily: 'Inter, system-ui, sans-serif', fontSize: 12 }} />
 
-          <Line type="monotone" dataKey="fan" name="Хар-ка установки" stroke="#6a9bcc"
+          <Line type="monotone" dataKey="fan" name="Хар-ка установки" stroke="#2f6fb5"
             strokeWidth={2.5} dot={false} isAnimationActive={false} />
-          <Line type="monotone" dataKey="sys" name="Хар-ка сети" stroke="#d97757"
+          <Line type="monotone" dataKey="sys" name="Хар-ка сети" stroke="#e8742c"
             strokeWidth={2} dot={false} isAnimationActive={false} />
 
           {/* выноски от рабочей точки к осям */}
           <ReferenceLine segment={[
             { x: result.actual_flow, y: 0 },
             { x: result.actual_flow, y: result.actual_head },
-          ]} stroke="#b0aea5" strokeDasharray="4 4" />
+          ]} stroke="#94a3b8" strokeDasharray="4 4" />
           <ReferenceLine segment={[
             { x: 0, y: result.actual_head },
             { x: result.actual_flow, y: result.actual_head },
-          ]} stroke="#b0aea5" strokeDasharray="4 4" />
+          ]} stroke="#94a3b8" strokeDasharray="4 4" />
 
           {/* рабочая точка */}
           <ReferenceDot x={result.actual_flow} y={result.actual_head} r={6}
-            fill="#788c5d" stroke="#fff" strokeWidth={2}
-            label={{ value: `Рабочая точка (${Math.round(result.actual_flow)}; ${Math.round(result.actual_head)})`, position: 'top', fontSize: 11, fill: '#788c5d' }} />
+            fill="#2f9e44" stroke="#fff" strokeWidth={2}
+            label={{ value: `Рабочая точка (${Math.round(result.actual_flow)}; ${Math.round(result.actual_head)})`, position: 'top', fontSize: 11, fill: '#2f9e44' }} />
 
           {/* данные запроса */}
           <ReferenceDot x={input.flow} y={input.head} r={5}
-            fill="#d97757" stroke="#fff" strokeWidth={2}
-            label={{ value: 'Запрос', position: 'bottom', fontSize: 11, fill: '#c15f3f' }} />
+            fill="#0f172a" stroke="#fff" strokeWidth={2}
+            label={{ value: 'Запрос', position: 'bottom', fontSize: 11, fill: '#475569' }} />
         </ComposedChart>
       </ResponsiveContainer>
       <p className="text-xs text-stone mt-1">
