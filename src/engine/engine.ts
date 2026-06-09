@@ -18,6 +18,7 @@ import {
   selectMst,
 } from './heater';
 import { findStock } from './stock';
+import { parseDisplayName } from './displayName';
 
 const db = database as unknown as ModelsDatabase;
 
@@ -245,6 +246,10 @@ export function findAnalog(
 
     // исключаем сам исходный типоразмер
     if (res.modelName === primary.modelName && res.m61.name === primary.m61?.name) continue;
+
+    // исключаем архивные/снятые позиции (НЕДОСТУПНА/НЕАКТУАЛЬНО) —
+    // их нельзя предлагать как замену даже при наличии на складе
+    if (parseDisplayName(res.m61.name).status !== null) continue;
 
     const aero =
       Math.abs(res.Q_op - primary.Q_op) / Math.max(primary.Q_op, 1) +

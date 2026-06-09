@@ -205,6 +205,51 @@ describe('Подбор аналога', () => {
       expect((best!.stock?.qty ?? 0)).toBeGreaterThan(0);
     }
   });
+
+  it('аналог не архивный (нет пометки НЕДОСТУПНА/НЕАКТУАЛЬНО)', async () => {
+    const { parseDisplayName } = await import('../src/engine/displayName');
+    expect(parseDisplayName(best!.m61!.name).status).toBeNull();
+  });
+
+  it('среди кандидатов нет архивных/снятых позиций', async () => {
+    const { parseDisplayName } = await import('../src/engine/displayName');
+    for (const c of candidates) {
+      expect(parseDisplayName(c.result.m61!.name).status).toBeNull();
+    }
+  });
+
+  it('архивные не предлагаются ни при одном входе (сводка по сценариям)', async () => {
+    const { parseDisplayName } = await import('../src/engine/displayName');
+    const scenarios = [
+      { installation_type: 'приточно-вытяжная', selection_mode: 'автоматический',
+        recup_type: 'пластинчатый', heater_type: 'электрический',
+        air_outlet: 'вбок', mounting: 'подвесная', motor_type: 'асинхронный' },
+      { installation_type: 'приточная', selection_mode: 'автоматический',
+        heater_type: 'электрический', case_type: 'изолированный',
+        automation: 'встроенная', motor_type: 'асинхронный', wall_thickness: 'стандартная' },
+    ].map((o) => ({ flow: 500, head: 150, t_outdoor: -30, rh_outdoor: 80, t_supply: 21, t_indoor: 18, rh_indoor: 40, ...o })) as any[];
+    for (const s of scenarios) {
+      const p = runSelection(s);
+      const { candidates: cands } = findAnalog(s, p);
+      for (const c of cands) {
+        expect(parseDisplayName(c.result.m61!.name).status).toBeNull();
+      }
+    }
+  });
+
+  it('нет активного аналога → best=null (модалка покажет сообщение)', () => {
+    const noAnalog = {
+      installation_type: 'приточно-вытяжная' as const,
+      selection_mode: 'вручную' as const,
+      manual_model_se: 'Unimax_P_VW', manual_size_no: 4,
+      flow: 2000, head: 300, t_outdoor: -30, rh_outdoor: 80, t_supply: 21,
+      t_indoor: 18, rh_indoor: 40, recup_type: 'пластинчатый' as const,
+      heater_type: 'водяной' as const, t_water_in: 80, t_water_out: 60,
+    };
+    const p = runSelection(noAnalog);
+    const { best: b } = findAnalog(noAnalog, p);
+    expect(b).toBeNull();
+  });
 });
 
 describe('Очистка служебных пометок в названии', () => {

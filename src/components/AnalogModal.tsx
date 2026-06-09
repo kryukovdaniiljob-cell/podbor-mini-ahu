@@ -35,7 +35,8 @@ export default function AnalogModal({ open, onClose, primary, analog, input }: P
         <div className="p-6">
           {!analog ? (
             <div className="rounded-xl border border-accent/40 bg-accent/10 p-4 font-heading text-accent-dark">
-              Не удалось подобрать аналог под заданные параметры с тем же типом нагревателя.
+              Активного аналога под заданные параметры не найдено (подходящие позиции
+              сняты с производства / в архиве).
             </div>
           ) : (
             <>
