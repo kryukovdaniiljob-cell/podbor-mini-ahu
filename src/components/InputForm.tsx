@@ -1,5 +1,6 @@
-import type { SelectorInput } from '../engine/types';
+import type { RecupType, SelectorInput } from '../engine/types';
 import { supplyModelNames, supplyExhaustModelNames } from '../engine/engine';
+import { recupTypeOfModel, modelForRecupType } from '../engine/selectModel';
 
 interface Props {
   value: SelectorInput;
@@ -27,6 +28,25 @@ export default function InputForm({ value, onChange }: Props) {
   const set = (patch: Partial<SelectorInput>) => onChange({ ...v, ...patch });
   const isSE = v.installation_type === 'приточно-вытяжная';
   const manual = v.selection_mode === 'вручную';
+
+  const seModels = supplyExhaustModelNames();
+  const seExists = (name: string) => seModels.includes(name);
+
+  // Ручной режим: «Тип рекуператора» ↔ модель Unimax синхронизируются.
+  // (Альтернатива по Excel — в ручном режиме скрыть селектор и показывать тип
+  //  как read-only от модели; реализован основной вариант — рабочее переключение.)
+  const onRecupTypeChange = (rt: RecupType) => {
+    if (manual && v.manual_model_se && recupTypeOfModel(v.manual_model_se)) {
+      set({ recup_type: rt, manual_model_se: modelForRecupType(v.manual_model_se, rt, seExists) });
+    } else {
+      set({ recup_type: rt });
+    }
+  };
+
+  const onManualModelSeChange = (model: string) => {
+    const rt = recupTypeOfModel(model); // синхронизируем селектор с моделью
+    set(rt ? { manual_model_se: model, recup_type: rt } : { manual_model_se: model });
+  };
 
   const num = (key: keyof SelectorInput) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const n = e.target.value === '' ? undefined : Number(e.target.value);
@@ -64,9 +84,9 @@ export default function InputForm({ value, onChange }: Props) {
         {manual && isSE && (
           <div>
             <label className={labelCls}>Модель (приточно-вытяжная)</label>
-            <select className={fieldCls} value={v.manual_model_se || supplyExhaustModelNames()[0]}
-              onChange={(e) => set({ manual_model_se: e.target.value })}>
-              {supplyExhaustModelNames().map((m) => <option key={m}>{m}</option>)}
+            <select className={fieldCls} value={v.manual_model_se || seModels[0]}
+              onChange={(e) => onManualModelSeChange(e.target.value)}>
+              {seModels.map((m) => <option key={m}>{m}</option>)}
             </select>
           </div>
         )}
@@ -114,7 +134,7 @@ export default function InputForm({ value, onChange }: Props) {
           <div className="col-span-2">
             <label className={labelCls}>Тип рекуператора</label>
             <select className={fieldCls} value={v.recup_type || 'пластинчатый'}
-              onChange={(e) => set({ recup_type: e.target.value as any })}>
+              onChange={(e) => onRecupTypeChange(e.target.value as RecupType)}>
               <option>пластинчатый</option>
               <option>роторный</option>
             </select>

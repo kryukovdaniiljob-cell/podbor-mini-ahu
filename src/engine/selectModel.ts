@@ -1,5 +1,55 @@
 // §3 Автоматический выбор модели (имя листа B26 = Q30/R30)
-import type { SelectorInput } from './types';
+import type { RecupType, SelectorInput } from './types';
+
+// ---- Синхронизация «Тип рекуператора» ↔ модель Unimax (ручной режим) ----
+// Имя Unimax кодирует тип рекуператора: P = пластинчатый, R = роторный.
+// Формат: Unimax_<P|R>_<S|V|C><W|E>[_EC]
+//   S — вбок-напольная, V — вверх, C — вбок-подвесная; W — водяной, E — электр.;
+//   суффикс _EC — EC-двигатель (только у пластинчатых).
+const UNIMAX_RE = /^Unimax_(P|R)_([SVC])([WE])(_EC)?$/;
+
+/** Тип рекуператора, зашитый в имени модели; null — если модель не Unimax (напр. Nova). */
+export function recupTypeOfModel(modelName: string): RecupType | null {
+  const m = UNIMAX_RE.exec(modelName);
+  if (!m) return null;
+  return m[1] === 'P' ? 'пластинчатый' : 'роторный';
+}
+
+/**
+ * Подобрать парную модель Unimax для другого типа рекуператора, сохраняя по
+ * возможности направление выброса (S/V/C), нагрев (W/E) и EC.
+ * Если точного варианта нет (у роторных нет C-исполнения и нет _EC) — берётся
+ * ближайший существующий. modelExists — проверка наличия модели в базе.
+ */
+export function modelForRecupType(
+  modelName: string,
+  target: RecupType,
+  modelExists: (name: string) => boolean,
+): string {
+  const m = UNIMAX_RE.exec(modelName);
+  if (!m) return modelName; // не Unimax (например Nova) — не трогаем
+  const targetKind = target === 'пластинчатый' ? 'P' : 'R';
+  if (m[1] === targetKind) return modelName; // уже нужный тип
+
+  let orient = m[2];
+  let ec = m[4] ?? '';
+  if (targetKind === 'R') {
+    // у роторных нет вбок-подвесного (C) и нет EC-исполнения
+    if (orient === 'C') orient = 'S';
+    ec = '';
+  }
+  const heater = m[3];
+
+  const candidates = [
+    `Unimax_${targetKind}_${orient}${heater}${ec}`,
+    `Unimax_${targetKind}_${orient}${heater}`,
+    `Unimax_${targetKind}_S${heater}${ec}`,
+    `Unimax_${targetKind}_S${heater}`,
+    `Unimax_${targetKind}_V${heater}`,
+  ];
+  for (const c of candidates) if (modelExists(c)) return c;
+  return modelName; // на крайний случай не падаем
+}
 
 export function selectModelName(inp: SelectorInput): string {
   if (inp.installation_type === 'приточная') return selectSupply(inp);

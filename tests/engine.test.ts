@@ -252,6 +252,45 @@ describe('Подбор аналога', () => {
   });
 });
 
+describe('Синхронизация тип рекуператора ↔ модель Unimax (ручной режим)', () => {
+  const seExists = (n: string) => Object.keys((db as any).models).includes(n)
+    && (db as any).models[n].type === 'supply_exhaust';
+
+  it('recupTypeOfModel определяет тип по имени', async () => {
+    const { recupTypeOfModel } = await import('../src/engine/selectModel');
+    expect(recupTypeOfModel('Unimax_P_SE')).toBe('пластинчатый');
+    expect(recupTypeOfModel('Unimax_R_SE')).toBe('роторный');
+    expect(recupTypeOfModel('Nova')).toBeNull();
+  });
+
+  it('Unimax_R_SE + пластинчатый → Unimax_P_SE и обратно', async () => {
+    const { modelForRecupType } = await import('../src/engine/selectModel');
+    expect(modelForRecupType('Unimax_R_SE', 'пластинчатый', seExists)).toBe('Unimax_P_SE');
+    expect(modelForRecupType('Unimax_P_SE', 'роторный', seExists)).toBe('Unimax_R_SE');
+  });
+
+  it('у роторных нет C и _EC: C→S, _EC отбрасывается', async () => {
+    const { modelForRecupType } = await import('../src/engine/selectModel');
+    expect(modelForRecupType('Unimax_P_CE', 'роторный', seExists)).toBe('Unimax_R_SE');
+    expect(modelForRecupType('Unimax_P_SW_EC', 'роторный', seExists)).toBe('Unimax_R_SW');
+  });
+
+  it('переключение меняет подобранную позицию (числа отличаются)', () => {
+    const baseSE = {
+      installation_type: 'приточно-вытяжная' as const, selection_mode: 'вручную' as const,
+      manual_size_no: 1, flow: 500, head: 150, t_outdoor: -30, rh_outdoor: 80, t_supply: 21,
+      t_indoor: 18, rh_indoor: 40, heater_type: 'электрический' as const,
+    };
+    const rotary = runSelection({ ...baseSE, manual_model_se: 'Unimax_R_SE', recup_type: 'роторный' });
+    const plate = runSelection({ ...baseSE, manual_model_se: 'Unimax_P_SE', recup_type: 'пластинчатый' });
+    expect(rotary.modelName).toBe('Unimax_R_SE');
+    expect(plate.modelName).toBe('Unimax_P_SE');
+    expect(rotary.m61!.name).not.toBe(plate.m61!.name);
+    expect(rotary.recup!.recup_kind).toBe('роторный');
+    expect(plate.recup!.recup_kind).toBe('пластинчатый');
+  });
+});
+
 describe('Очистка служебных пометок в названии', () => {
   it('убирает НЕДОСТУПНА и возвращает статус', async () => {
     const { parseDisplayName } = await import('../src/engine/displayName');
