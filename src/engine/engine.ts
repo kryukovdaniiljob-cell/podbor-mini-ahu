@@ -119,6 +119,8 @@ export function computeForModel(
   let recup;
   let tIntoHeater = inp.t_outdoor;
   if (isSE && inp.t_indoor != null && inp.rh_indoor != null) {
+    // тип рекуператора берём из дескриптора модели (роторный/пластинчатый)
+    const recupKind = /роторн/i.test(model.descriptor_AN3 ?? '') ? 'роторный' : 'пластинчатый';
     recup = computeRecup(
       m60,
       {
@@ -130,6 +132,7 @@ export function computeForModel(
         flow: inp.flow,
       },
       db.air_properties,
+      recupKind,
     );
     tIntoHeater = recup.t_supply_out;
   }

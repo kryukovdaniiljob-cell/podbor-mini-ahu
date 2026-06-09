@@ -136,6 +136,7 @@ export default function SpecSheet({ result, input }: Props) {
         <div>
           {isSE && r && (
             <Block title="Рекуператор">
+              <Row label="Тип рекуператора" value={r.recup_kind} />
               <Row label="t приток вход" value={fmt(r.t_supply_in)} unit="°C" />
               <Row label="t приток после рекуператора" value={fmt(r.t_supply_out)} unit="°C" />
               <Row label="φ приток вход" value={fmt(r.rh_supply_in)} unit="%" />
@@ -143,6 +144,7 @@ export default function SpecSheet({ result, input }: Props) {
               <Row label="Энтальпия приток" value={fmt(r.h_supply_in)} unit="кДж/кг" />
               <Row label="t вытяжка вход" value={fmt(r.t_exhaust_in)} unit="°C" />
               <Row label="t вытяжка выход" value={fmt(r.t_exhaust_out)} unit="°C" />
+              <Row label="φ вытяжка выход" value={fmt(r.rh_exhaust_out)} unit="%" />
               <Row label="Преднагрев" value={fmt(r.preheat_kW)} unit="кВт" />
               <Row label="Эффективность по температуре" value={fmt(r.eff_T_pct, 1)} unit="%" />
               <Row label="Эффективность по энтальпии" value={fmt(r.eff_H_pct, 1)} unit="%" />

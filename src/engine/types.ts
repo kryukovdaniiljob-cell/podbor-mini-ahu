@@ -107,14 +107,21 @@ export interface SelectorInput {
 export interface ChartPoint { Q: number; fan?: number; sys?: number; }
 
 export interface RecupResult {
+  recup_kind: 'роторный' | 'пластинчатый';
   t_supply_in: number;     // t приток вход (наружный)
   t_supply_out: number;    // t приток после рекуператора (J33)
-  rh_supply_in: number;
-  d_supply_in: number;
-  h_supply_in: number;
+  rh_supply_in: number;    // φ приток вход (E4)
+  rh_supply_out: number;   // φ приток выход (J34)
+  d_supply_in: number;     // влагосодержание приток вход (d_si)
+  h_supply_in: number;     // энтальпия приток вход (Q25)
+  h_supply_out: number;    // энтальпия приток выход (R25)
   t_exhaust_in: number;    // t вытяжка вход (внутренний)
-  t_exhaust_out: number;   // t вытяжка после рекуператора
-  rh_exhaust_in: number;
+  t_exhaust_out: number;   // t вытяжка выход (L33)
+  rh_exhaust_in: number;   // φ вытяжка вход
+  rh_exhaust_out: number;  // φ вытяжка выход (L34)
+  d_exhaust_in: number;    // влагосодержание вытяжка вход (d_ei)
+  h_exhaust_in: number;    // энтальпия вытяжка вход (Q26)
+  h_exhaust_out: number;   // энтальпия вытяжка выход (R26)
   eff_T_pct: number;       // эффективность по температуре, %
   eff_H_pct: number;       // эффективность по энтальпии, %
   preheat_kW: number;      // CM

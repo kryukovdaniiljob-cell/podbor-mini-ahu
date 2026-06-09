@@ -68,8 +68,51 @@ describe('§11 контрольный пример Unimax_P_CE (ручной, т
     expect(within(res.required_heater_kW, 4.23, 0.02)).toBe(true);
   });
 
-  it('температура после рекуператора ≈ -4.08°C', () => {
+  it('температура притока после рекуператора ≈ -4.08°C', () => {
     expect(within(res.recup!.t_supply_out, -4.08, 0.02)).toBe(true);
+  });
+
+  it('t вытяжки на выходе ≈ -14.3°C (пластинчатый, баланс с конденсацией)', () => {
+    expect(res.recup!.recup_kind).toBe('пластинчатый');
+    expect(Math.abs(res.recup!.t_exhaust_out - -14.3)).toBeLessThanOrEqual(0.5);
+  });
+
+  it('φ вытяжки на выходе = 100% (конденсация в пластинчатом)', () => {
+    expect(res.recup!.rh_exhaust_out).toBeCloseTo(100, 1);
+  });
+
+  it('энтальпийный баланс: Q26≈31.07, R26≈-11.80, effH≈70.38%', () => {
+    expect(within(res.recup!.h_exhaust_in, 31.07, 0.02)).toBe(true);
+    expect(within(res.recup!.h_exhaust_out, -11.80, 0.05)).toBe(true);
+    expect(within(res.recup!.eff_H_pct, 70.38, 0.02)).toBe(true);
+  });
+});
+
+describe('Рекуператор: ветвление по типу', () => {
+  const args = {
+    t_outdoor: -30, rh_outdoor: 80, t_indoor: 18, rh_indoor: 40, t_supply: 21, flow: 500,
+  };
+  const plateSize = (db.models['Unimax_P_CE'].sizes as any[])[3]; // пластинчатая модель, size №4
+
+  it('пластинчатый и роторный дают разную t вытяжки на тех же коэффициентах', async () => {
+    const { computeRecup } = await import('../src/engine/recuperator');
+    const plate = computeRecup(plateSize, args, db.air_properties, 'пластинчатый');
+    const rotary = computeRecup(plateSize, args, db.air_properties, 'роторный');
+    expect(Math.abs(plate.t_exhaust_out - -14.3)).toBeLessThanOrEqual(0.5);
+    expect(Math.abs(rotary.t_exhaust_out - -11.7)).toBeLessThanOrEqual(0.5);
+    expect(Math.abs(plate.t_exhaust_out - rotary.t_exhaust_out)).toBeGreaterThan(1.5);
+  });
+
+  it('для роторной модели (Unimax_R_*) используется роторная ветвь', () => {
+    const r = runSelection({
+      installation_type: 'приточно-вытяжная', selection_mode: 'вручную',
+      manual_model_se: 'Unimax_R_SW', manual_size_no: 1,
+      flow: 500, head: 150, t_outdoor: -30, rh_outdoor: 80, t_supply: 21,
+      t_indoor: 18, rh_indoor: 40, recup_type: 'роторный', heater_type: 'водяной',
+      t_water_in: 80, t_water_out: 60,
+    });
+    expect(r.recup!.recup_kind).toBe('роторный');
+    expect(r.recup!.rh_exhaust_out).toBeCloseTo(95, 0); // роторный кэп 95%
   });
 });
 
