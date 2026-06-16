@@ -7,6 +7,7 @@ import AeroChart from './components/AeroChart';
 import SpecSheet from './components/SpecSheet';
 import AnalogModal from './components/AnalogModal';
 import ShuftLogo from './components/ShuftLogo';
+import { generateReport } from './report/generateReport';
 
 const DEFAULT_INPUT: SelectorInput = {
   installation_type: 'приточно-вытяжная',
@@ -46,6 +47,17 @@ export default function App() {
 
   const [analogOpen, setAnalogOpen] = useState(false);
   const [analog, setAnalog] = useState<SelectorResult | null>(null);
+  const [pdfBusy, setPdfBusy] = useState(false);
+
+  const handleDownloadPdf = async () => {
+    if (pdfBusy || !result.ok) return;
+    setPdfBusy(true);
+    try {
+      await generateReport(result, committed);
+    } finally {
+      setPdfBusy(false);
+    }
+  };
 
   const handleCalculate = () => {
     setCommitted(form);
@@ -167,10 +179,14 @@ export default function App() {
                 Подобрать аналог
               </button>
               <button
-                onClick={() => window.print()}
-                className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-white shadow-card transition hover:bg-accent-dark"
+                onClick={handleDownloadPdf}
+                disabled={pdfBusy || dirty || !result.ok}
+                className={
+                  'rounded-md px-4 py-2 text-sm font-medium text-white shadow-card transition ' +
+                  (pdfBusy || dirty || !result.ok ? 'bg-stone/60 cursor-default' : 'bg-accent hover:bg-accent-dark')
+                }
               >
-                Печать / PDF
+                {pdfBusy ? 'Формирую PDF…' : 'Скачать PDF'}
               </button>
             </div>
           </div>

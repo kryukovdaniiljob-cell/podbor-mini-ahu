@@ -1,5 +1,7 @@
+import { useState } from 'react';
 import type { SelectorResult, SelectorInput } from '../engine/types';
 import { parseDisplayName } from '../engine/displayName';
+import { generateReport } from '../report/generateReport';
 import AeroChart from './AeroChart';
 import SpecSheet from './SpecSheet';
 
@@ -12,7 +14,18 @@ interface Props {
 }
 
 export default function AnalogModal({ open, onClose, primary, analog, input }: Props) {
+  const [pdfBusy, setPdfBusy] = useState(false);
   if (!open) return null;
+
+  const downloadAnalogPdf = async () => {
+    if (!analog || pdfBusy) return;
+    setPdfBusy(true);
+    try {
+      await generateReport(analog, input);
+    } finally {
+      setPdfBusy(false);
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto bg-ink/50 p-4 sm:p-8">
@@ -24,12 +37,26 @@ export default function AnalogModal({ open, onClose, primary, analog, input }: P
               Ближайшая по характеристикам установка, доступная как альтернатива
             </p>
           </div>
-          <button
-            onClick={onClose}
-            className="rounded-lg border border-sand px-3 py-1.5 text-sm font-heading text-ink/70 transition hover:bg-paper"
-          >
-            ✕ Закрыть
-          </button>
+          <div className="flex items-center gap-2">
+            {analog && (
+              <button
+                onClick={downloadAnalogPdf}
+                disabled={pdfBusy}
+                className={
+                  'rounded-lg px-3 py-1.5 text-sm font-heading font-medium text-white transition ' +
+                  (pdfBusy ? 'bg-stone/60 cursor-default' : 'bg-accent hover:bg-accent-dark')
+                }
+              >
+                {pdfBusy ? 'Формирую PDF…' : 'Скачать PDF'}
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="rounded-lg border border-sand px-3 py-1.5 text-sm font-heading text-ink/70 transition hover:bg-paper"
+            >
+              ✕ Закрыть
+            </button>
+          </div>
         </div>
 
         <div className="p-6">
