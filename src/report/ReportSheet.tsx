@@ -3,6 +3,7 @@
 import type { SelectorResult, SelectorInput } from '../engine/types';
 import { parseDisplayName } from '../engine/displayName';
 import { imagesForModel, imageUrl } from '../data/modelImages';
+import ShuftLogo from '../components/ShuftLogo';
 
 interface Props {
   result: SelectorResult;
@@ -54,10 +55,7 @@ export default function ReportSheet({ result, input, chartPng, reportNo, dateStr
     <div style={{ width: 794, background: '#fff', color: C.ink, fontFamily: 'Inter, Arial, sans-serif', boxSizing: 'border-box' }}>
       {/* Шапка */}
       <div data-block style={{ background: C.shaft, color: '#fff', padding: '16px 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div>
-          <div style={{ fontFamily: 'Oswald, Arial, sans-serif', fontWeight: 700, fontSize: 26, letterSpacing: '0.04em' }}>SHUFT®</div>
-          <div style={{ fontFamily: 'Oswald, Arial, sans-serif', fontSize: 10, letterSpacing: '0.34em', opacity: 0.7 }}>HVAC TECHNOLOGIES</div>
-        </div>
+        <ShuftLogo color="#ffffff" className="h-9 w-auto" />
         <div style={{ textAlign: 'right', fontSize: 11, opacity: 0.85 }}>
           <div style={{ fontSize: 15, fontWeight: 600, opacity: 1 }}>Подбор КПВУ</div>
           <div>Отчёт № {reportNo}</div>
@@ -160,14 +158,6 @@ export default function ReportSheet({ result, input, chartPng, reportNo, dateStr
             ))}
             <Row label="Вес" value={`${fmt(s?.dims?.weight_kg, 0)} кг`} />
           </div>
-          {imgs && imgs.drawings.length > 0 && (
-            <div style={{ display: 'flex', gap: 10, marginTop: 10, flexWrap: 'wrap' }}>
-              {imgs.drawings.map((d) => (
-                <img key={d} src={imageUrl(d)} crossOrigin="anonymous"
-                  style={{ height: 90, width: 'auto', border: `1px solid ${C.sand}`, borderRadius: 6, padding: 4, background: '#fff' }} />
-              ))}
-            </div>
-          )}
         </div>
 
         <div data-block style={{ marginTop: 18, paddingTop: 10, borderTop: `1px solid ${C.sand}`, fontSize: 10, color: C.stone, display: 'flex', justifyContent: 'space-between' }}>
