@@ -52,30 +52,56 @@ export async function generateReport(result: SelectorResult, input: SelectorInpu
 
     await waitImages(host);
 
-    const canvas = await html2canvas(host.firstElementChild as HTMLElement, {
+    const rootEl = host.firstElementChild as HTMLElement;
+    const canvas = await html2canvas(rootEl, {
       scale: 1.6,
       useCORS: true,
       backgroundColor: '#ffffff',
       logging: false,
     });
 
+    // границы логических блоков (data-block) в координатах canvas — страницы режем
+    // только по ним, чтобы блок (например график) не разрывался между страницами
+    const rootRect = rootEl.getBoundingClientRect();
+    const ratio = canvas.height / rootRect.height;
+    const blockTops = Array.from(rootEl.querySelectorAll('[data-block]')).map(
+      (el) => (el.getBoundingClientRect().top - rootRect.top) * ratio,
+    );
+    const cuts = Array.from(new Set([0, ...blockTops, canvas.height]))
+      .filter((y) => y >= 0 && y <= canvas.height)
+      .sort((a, b) => a - b);
+
     const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
     const pageW = pdf.internal.pageSize.getWidth();
     const pageH = pdf.internal.pageSize.getHeight();
-    const imgW = pageW;
-    const imgH = (canvas.height * imgW) / canvas.width;
+    const pxPerMm = canvas.width / pageW;
+    const pageHpx = pageH * pxPerMm;
 
-    // JPEG вместо PNG — отчёт для пересылки получается в разы легче
-    const imgData = canvas.toDataURL('image/jpeg', 0.85);
-    let heightLeft = imgH;
-    let position = 0;
-    pdf.addImage(imgData, 'JPEG', 0, position, imgW, imgH);
-    heightLeft -= pageH;
-    while (heightLeft > 0) {
-      position -= pageH;
-      pdf.addPage();
-      pdf.addImage(imgData, 'JPEG', 0, position, imgW, imgH);
-      heightLeft -= pageH;
+    let start = 0;
+    let first = true;
+    while (start < canvas.height - 1) {
+      let end = start + pageHpx;
+      if (end >= canvas.height) {
+        end = canvas.height;
+      } else {
+        // последняя граница блока, помещающаяся на текущую страницу
+        const candidate = cuts.filter((c) => c > start + 1 && c <= end).pop();
+        if (candidate) end = candidate;
+        // иначе блок выше страницы — режем жёстко (фолбэк)
+      }
+      const sliceH = Math.round(end - start);
+      const slice = document.createElement('canvas');
+      slice.width = canvas.width;
+      slice.height = sliceH;
+      const sctx = slice.getContext('2d')!;
+      sctx.fillStyle = '#ffffff';
+      sctx.fillRect(0, 0, slice.width, slice.height);
+      sctx.drawImage(canvas, 0, start, canvas.width, sliceH, 0, 0, canvas.width, sliceH);
+
+      if (!first) pdf.addPage();
+      first = false;
+      pdf.addImage(slice.toDataURL('image/jpeg', 0.85), 'JPEG', 0, 0, pageW, sliceH / pxPerMm);
+      start = end;
     }
 
     const fileName = `Podbor_${translit(result.modelName)}_${reportNo}.pdf`;

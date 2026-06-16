@@ -53,7 +53,7 @@ export default function ReportSheet({ result, input, chartPng, reportNo, dateStr
   return (
     <div style={{ width: 794, background: '#fff', color: C.ink, fontFamily: 'Inter, Arial, sans-serif', boxSizing: 'border-box' }}>
       {/* Шапка */}
-      <div style={{ background: C.shaft, color: '#fff', padding: '16px 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div data-block style={{ background: C.shaft, color: '#fff', padding: '16px 28px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
           <div style={{ fontFamily: 'Oswald, Arial, sans-serif', fontWeight: 700, fontSize: 26, letterSpacing: '0.04em' }}>SHUFT®</div>
           <div style={{ fontFamily: 'Oswald, Arial, sans-serif', fontSize: 10, letterSpacing: '0.34em', opacity: 0.7 }}>HVAC TECHNOLOGIES</div>
@@ -66,16 +66,17 @@ export default function ReportSheet({ result, input, chartPng, reportNo, dateStr
       </div>
 
       <div style={{ padding: '18px 28px 24px' }}>
-        <div style={{ fontSize: 18, fontWeight: 700 }}>{result.title}</div>
-        <div style={{ fontSize: 16, fontWeight: 600, color: C.accentDark, marginTop: 2 }}>
-          {name.clean}{name.status ? ` (${name.status})` : ''}
-        </div>
-        <div style={{ fontSize: 11, color: C.stone, marginTop: 2 }}>
-          Модель: {result.modelName} · типоразмер №{s?.size_no}
-        </div>
+        <div data-block>
+          <div style={{ fontSize: 18, fontWeight: 700 }}>{result.title}</div>
+          <div style={{ fontSize: 16, fontWeight: 600, color: C.accentDark, marginTop: 2 }}>
+            {name.clean}{name.status ? ` (${name.status})` : ''}
+          </div>
+          <div style={{ fontSize: 11, color: C.stone, marginTop: 2 }}>
+            Модель: {result.modelName} · типоразмер №{s?.size_no}
+          </div>
 
-        {/* Карточка изделия: фото + наличие/цена/ссылка */}
-        <div style={{ display: 'flex', gap: 16, marginTop: 14, alignItems: 'flex-start' }}>
+          {/* Карточка изделия: фото + наличие/цена/ссылка */}
+          <div style={{ display: 'flex', gap: 16, marginTop: 14, alignItems: 'flex-start' }}>
           {imgs && (
             <img src={imageUrl(imgs.photo)} crossOrigin="anonymous"
               style={{ width: 260, height: 'auto', border: `1px solid ${C.sand}`, borderRadius: 8, padding: 6, background: '#fff' }} />
@@ -91,9 +92,10 @@ export default function ReportSheet({ result, input, chartPng, reportNo, dateStr
             </div>
           </div>
         </div>
+        </div>
 
         {/* Две колонки: запрос+установка слева, нагреватель/рекуператор справа */}
-        <div style={{ display: 'flex', gap: 24, marginTop: 6 }}>
+        <div data-block style={{ display: 'flex', gap: 24, marginTop: 6 }}>
           <div style={{ flex: 1 }}>
             <BlockTitle>Данные запроса</BlockTitle>
             <Row label="Расход воздуха" value={`${fmt(input.flow, 0)} м³/ч`} />
@@ -144,27 +146,31 @@ export default function ReportSheet({ result, input, chartPng, reportNo, dateStr
         </div>
 
         {/* График */}
-        <BlockTitle>Аэродинамические характеристики</BlockTitle>
-        <img src={chartPng} style={{ width: '100%', height: 'auto', border: `1px solid ${C.sand}`, borderRadius: 8 }} />
+        <div data-block>
+          <BlockTitle>Аэродинамические характеристики</BlockTitle>
+          <img src={chartPng} style={{ width: '100%', height: 'auto', border: `1px solid ${C.sand}`, borderRadius: 8 }} />
+        </div>
 
         {/* Массогабаритные + чертежи */}
-        <BlockTitle>Массогабаритные характеристики, мм</BlockTitle>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', columnGap: 20 }}>
-          {DIM_KEYS.map((k) => (
-            <Row key={k} label={k} value={fmt(s?.dims?.[k])} />
-          ))}
-          <Row label="Вес" value={`${fmt(s?.dims?.weight_kg, 0)} кг`} />
-        </div>
-        {imgs && imgs.drawings.length > 0 && (
-          <div style={{ display: 'flex', gap: 10, marginTop: 10, flexWrap: 'wrap' }}>
-            {imgs.drawings.map((d) => (
-              <img key={d} src={imageUrl(d)} crossOrigin="anonymous"
-                style={{ height: 90, width: 'auto', border: `1px solid ${C.sand}`, borderRadius: 6, padding: 4, background: '#fff' }} />
+        <div data-block>
+          <BlockTitle>Массогабаритные характеристики, мм</BlockTitle>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', columnGap: 20 }}>
+            {DIM_KEYS.map((k) => (
+              <Row key={k} label={k} value={fmt(s?.dims?.[k])} />
             ))}
+            <Row label="Вес" value={`${fmt(s?.dims?.weight_kg, 0)} кг`} />
           </div>
-        )}
+          {imgs && imgs.drawings.length > 0 && (
+            <div style={{ display: 'flex', gap: 10, marginTop: 10, flexWrap: 'wrap' }}>
+              {imgs.drawings.map((d) => (
+                <img key={d} src={imageUrl(d)} crossOrigin="anonymous"
+                  style={{ height: 90, width: 'auto', border: `1px solid ${C.sand}`, borderRadius: 6, padding: 4, background: '#fff' }} />
+              ))}
+            </div>
+          )}
+        </div>
 
-        <div style={{ marginTop: 18, paddingTop: 10, borderTop: `1px solid ${C.sand}`, fontSize: 10, color: C.stone, display: 'flex', justifyContent: 'space-between' }}>
+        <div data-block style={{ marginTop: 18, paddingTop: 10, borderTop: `1px solid ${C.sand}`, fontSize: 10, color: C.stone, display: 'flex', justifyContent: 'space-between' }}>
           <span>SHUFT HVAC Technologies · Сервис подбора КПВУ</span>
           <span>Расчёт носит справочный характер</span>
         </div>
