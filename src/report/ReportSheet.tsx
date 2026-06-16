@@ -86,7 +86,16 @@ export default function ReportSheet({ result, input, chartPng, reportNo, dateStr
             <div style={{ marginTop: 6 }}>
               <Row label="НС-код" value={result.stock?.code && result.stock.code !== '—' ? result.stock.code : '—'} />
               <Row label="Наличие на складе" value={result.stock && result.stock.qty > 0 ? `${result.stock.qty} шт.` : 'нет (0 шт.)'} />
-              {result.catalog?.url && <Row label="Карточка товара" value={<span style={{ color: C.accent }}>{result.catalog.url}</span>} />}
+              {result.catalog?.url && (
+                <Row
+                  label="Карточка товара"
+                  value={
+                    <span data-link={result.catalog.url} style={{ color: C.accent, fontWeight: 600, textDecoration: 'underline' }}>
+                      Ссылка ↗
+                    </span>
+                  }
+                />
+              )}
             </div>
           </div>
         </div>

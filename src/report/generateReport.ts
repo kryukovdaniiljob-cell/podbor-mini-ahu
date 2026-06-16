@@ -77,6 +77,7 @@ export async function generateReport(result: SelectorResult, input: SelectorInpu
     const pxPerMm = canvas.width / pageW;
     const pageHpx = pageH * pxPerMm;
 
+    const pageRanges: { start: number; end: number }[] = [];
     let start = 0;
     let first = true;
     while (start < canvas.height - 1) {
@@ -101,7 +102,23 @@ export async function generateReport(result: SelectorResult, input: SelectorInpu
       if (!first) pdf.addPage();
       first = false;
       pdf.addImage(slice.toDataURL('image/jpeg', 0.85), 'JPEG', 0, 0, pageW, sliceH / pxPerMm);
+      pageRanges.push({ start, end });
       start = end;
+    }
+
+    // кликабельные гиперссылки поверх растрового изображения (слово «Ссылка»)
+    for (const el of Array.from(rootEl.querySelectorAll<HTMLElement>('[data-link]'))) {
+      const url = el.getAttribute('data-link');
+      if (!url) continue;
+      const rect = el.getBoundingClientRect();
+      const ly0 = (rect.top - rootRect.top) * ratio;
+      const lx0 = (rect.left - rootRect.left) * ratio;
+      const lw = rect.width * ratio;
+      const lh = rect.height * ratio;
+      const pageIdx = pageRanges.findIndex((p) => ly0 >= p.start && ly0 < p.end);
+      if (pageIdx < 0) continue;
+      pdf.setPage(pageIdx + 1);
+      pdf.link(lx0 / pxPerMm, (ly0 - pageRanges[pageIdx].start) / pxPerMm, lw / pxPerMm, lh / pxPerMm, { url });
     }
 
     const fileName = `Podbor_${translit(result.modelName)}_${reportNo}.pdf`;
